@@ -5,12 +5,11 @@
 #################################
 #Only run the hypersonic database in test tier.
 if [[ $TIER == "TEST" ]]; then
-  if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
-    #If the service has not bee installed yet sleep for 15 minutes.  Otherwise sleep for 1 minute before starting.
-    sleep 900
-  else
-	sleep 60
-  fi
+  while [ ! $(ps aux|grep "[c]atalina"|awk '{print $2}') ]; do
+    #If the service has not been started yet sleep for 10 minutes.
+    sleep 600
+  done
+  sleep 60
   echo "Starting Hypersonic DB"
   exec setuser pentaho $PENTAHO_HOME/server/biserver-ee/data/start_hypersonic.sh
 fi

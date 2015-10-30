@@ -2,13 +2,13 @@
 
 #Double check if Pentaho is installed at all.
 if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
-  #Install Pentaho BA Server at version 5.4.0.1-130
+  #Install Pentaho BA Server at version 6.0.0.0-353
   
   # Components to be installed
   COMPONENTS="biserver-ee"
   PLUGINS="paz-plugin-ee:pdd-plugin-ee:pentaho-mobile-plugin:pir-plugin-ee"
-  PENTAHO_VERSION="5.4.0.1"
-  PENTAHO_PATCH="130"
+  PENTAHO_VERSION="6.0.0.0"
+  PENTAHO_PATCH="353"
   PENTAHO_HOME="/opt/pentaho"
 
   ##################################
@@ -22,19 +22,19 @@ if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
   #2. Get from dropbox.
   ### Download Pentaho Business Analytics & plugins   --- (Don't have pwd for ftp, above.  Used dropbox instead.)
   cd /tmp/pentaho;
-  if [ ! -f "biserver-ee-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO biserver-ee-5.4.0.1-130-dist.zip https://file.location.to/biserver-ee-5.4.0.1-130-dist.zip; fi
-  if [ ! -f "paz-plugin-ee-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO paz-plugin-ee-5.4.0.1-130-dist.zip https://file.location.to/paz-plugin-ee-5.4.0.1-130-dist.zip; fi
-  if [ ! -f "pdd-plugin-ee-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO pdd-plugin-ee-5.4.0.1-130-dist.zip https://file.location.to/pdd-plugin-ee-5.4.0.1-130-dist.zip; fi
-  if [ ! -f "pentaho-analysis-ee-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO pentaho-analysis-ee-5.4.0.1-130-dist.zip https://file.location.to/pentaho-analysis-ee-5.4.0.1-130-dist.zip; fi
-  if [ ! -f "pir-plugin-ee-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO pir-plugin-ee-5.4.0.1-130-dist.zip https://file.location.to/pir-plugin-ee-5.4.0.1-130-dist.zip; fi
-  if [ ! -f "pentaho-mobile-plugin-5.4.0.1-130-dist.zip" ]; then wget --progress=dot -qO pentaho-mobile-plugin-5.4.0.1-130-dist.zip https://file.location.to/pentaho-mobile-plugin-5.4.0.1-130-dist.zip; fi
+  if [ ! -f "biserver-ee-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO biserver-ee-6.0.0.0-353-dist.zip https://file.location.to/biserver-ee-6.0.0.0-353-dist.zip; fi
+  if [ ! -f "paz-plugin-ee-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO paz-plugin-ee-6.0.0.0-353-dist.zip https://file.location.to/paz-plugin-ee-6.0.0.0-353-dist.zip; fi
+  if [ ! -f "pdd-plugin-ee-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO pdd-plugin-ee-6.0.0.0-353-dist.zip https://file.location.to/pdd-plugin-ee-6.0.0.0-353-dist.zip; fi
+  if [ ! -f "pir-plugin-ee-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO pir-plugin-ee-6.0.0.0-353-dist.zip https://file.location.to/pir-plugin-ee-6.0.0.0-353-dist.zip; fi
+  if [ ! -f "pentaho-mobile-plugin-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO pentaho-mobile-plugin-6.0.0.0-353-dist.zip https://file.location.to/pentaho-mobile-plugin-6.0.0.0-353-dist.zip; fi
+  if [ ! -f "pentaho-operations-mart-6.0.0.0-353-dist.zip" ]; then wget --progress=dot -qO pentaho-operations-mart-6.0.0.0-353-dist.zip https://file.location.to/pentaho-operations-mart-6.0.0.0-353-dist.zip; fi
  
 
 # Unzip components, removing the archives as we go
   for PKG in $(echo ${COMPONENTS} | tr ':' '\n'); \
-  do echo "Unzipping $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip...";
+  do echo "Unzipping $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip";
     unzip -q /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip -d /tmp/pentaho;
-	echo "$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}" > /opt/pentaho/pentaho_bi_installed_version.txt
+	echo "$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}" > /opt/pentaho/automation/pentaho_bi_installed_version.txt;
     rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip;
   done
 
@@ -66,32 +66,42 @@ if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
   #*************************************
   #* Install operations mart DLL files *
   #*************************************
-  #Instructions say to unpack pentaho-operations-mart-ddl-5.4.0.zip but this doesn't exist.  I think its built in to the main package.
+  ADDON="pentaho-operations-mart"
+  echo "Installing bi Operations Mart DDL Files";
+  sed -- "s:<installpath>[a-zA-Z0-9\/\-\.]*:<installpath>/tmp/pentaho/$ADDON-${PENTAHO_VERSION}-${PENTAHO_PATCH}:g" /tmp/pentaho/build/auto-install.xml.default > auto-install.xml;
+  for PKG in $(echo ${ADDON} | tr ':' '\n');
+  do echo "Unzipping $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip...";
+    unzip -q /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip -d /tmp/pentaho;
+    java -jar $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/installer.jar auto-install.xml 2>/dev/null;
+	unzip -q $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/pentaho-operations-mart-ddl-${PENTAHO_VERSION}-${PENTAHO_PATCH}.zip -d /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH};
+	cp -R $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/postgresql/* $PENTAHO_HOME/server/biserver-ee/data/postgresql/
+    #rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}*;
+  done
 
   #******************************
   #* Install analysis EE plugin *
   #******************************  
   # Can comment this section out if we don't want this.
-  #PLUGINS="pentaho-analysis-ee"
+  #ADDON="pentaho-analysis-ee"
   #echo "Installing bi Analysis plugin";
-  #for PKG in $(echo ${PLUGINS} | tr ':' '\n');
+  #for PKG in $(echo ${ADDON} | tr ':' '\n');
   #do sed -- "s:<installpath>[a-zA-Z0-9\/\-\.]*:<installpath>/tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}:g" /tmp/pentaho/build/auto-install.xml.default > auto-install.xml;
   #  echo "Unzipping $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip...";
   #  unzip -q /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip -d /tmp/pentaho;
   #  java -jar $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/installer.jar auto-install.xml 2>/dev/null;
   #	mkdir -p /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/pentaho-analysis-ee-5.4.0.1*.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/infinispan-core-5.3.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/jboss-logging-3.1.1.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/jboss-marshalling-1.3.15.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/jboss-marshalling-river-1.3.15.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/jboss-transaction-api_1.1_spec-1.0.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/jgroups-3.3.1.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
-  #  cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/lib/staxmapper-1.1.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/pentaho-analysis-ee-5.4.0.1*.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/infinispan-core-5.3.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/jboss-logging-3.1.1.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/jboss-marshalling-1.3.15.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/jboss-marshalling-river-1.3.15.GA.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/jboss-transaction-api_1.1_spec-1.0.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/jgroups-3.3.1.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
+  #  cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/lib/staxmapper-1.1.0.Final.jar /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/lib/; 
   #  mkdir -p /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/classes/
-  #	cp /tmp/pentaho/pentaho-analysis-ee-5.4.0.1-130/pentaho-analysis-ee/config/* /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/classes/; 
-  #  rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}*; 
+  #	cp /tmp/pentaho/pentaho-analysis-ee-6.0.0.0-353/pentaho-analysis-ee/config/* /opt/pentaho/server/biserver-ee/tomcat/webapps/pentaho/WEB-INF/classes/; 
   #done
+  #  rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}*; 
 	
   #Enable USE_SEGMEN_CACHE ?  - Not required for smaller environments.
   
@@ -114,13 +124,6 @@ if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
   #rm -f ${PENTAHO_HOME}/server/biserver-ee/pentaho-solutions/system/default-content/*.zip
   #perl -0777 -i -pe 's/(<!-- \[BEGIN HSQLDB DATABASES\] -->)(.*)(<!-- \[END HSQLDB DATABASES\] -->)/$1\n    <!--    $2-->\n    $3/smg' $CATALINA_HOME/webapps/pentaho/WEB-INF/web.xml
   #perl -0777 -i -pe 's/(<!-- \[BEGIN HSQLDB STARTER\] -->)(.*)(<!-- \[END HSQLDB STARTER\] -->)/$1\n    <!--    $2-->\n    $3/smg' $CATALINA_HOME/webapps/pentaho/WEB-INF/web.xml
-  
-  
-  #*********************************
-  #*  Configure JDBC Drivers       *
-  #*********************************
-  mv /tmp/build/sqljdbc4.jar $PENTAHO_HOME/server/biserver-ee/tomcat/lib/; \
-  chown -R pentaho:pentaho $PENTAHO_HOME/server/biserver-ee/tomcat/lib/
   
   #Done installing pentaho ba.
 else
