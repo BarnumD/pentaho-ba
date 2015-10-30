@@ -17,7 +17,7 @@
 #   #test
 #    docker run -d --name pentaho-ba-test -p 10800:8080 -e TIER=TEST -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-test -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-test:pentaho-db-test -v /docker/mounts/pentaho-ba-test/opt/pentaho:/opt/pentaho --memory 6344M --memory-swap -1 --oom-kill-disable -c=512 pentaho-ba:latest &
 #   #Prod
-#    docker run -d --name pentaho-ba-prod -p 10804:8080 -e TIER=PROD -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-prod -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-prod:pentaho-db-prod -v /docker/mounts/p_t1/pentaho-ba-prod/opt/pentaho:/opt/pentaho --memory 6656M --memory-swap -1 --oom-kill-disable -c=1024 pentaho-ba:0.99 &
+#    docker run -d --name pentaho-ba-prod -p 10804:8080 -e TIER=PROD -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-prod -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-prod:pentaho-db-prod -v /docker/mounts/p_t1/pentaho-ba-prod/opt/pentaho:/opt/pentaho --memory 6656M --memory-swap -1 --oom-kill-disable -c=1024 pentaho-ba:1.0 &
 #
 FROM phusion/baseimage:0.9.17
 MAINTAINER Dave Barnum <dave@thebarnums.com>
