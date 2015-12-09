@@ -68,14 +68,15 @@ if [ ! -f "/opt/pentaho/server/biserver-ee/start-pentaho.sh" ]; then
   #*************************************
   ADDON="pentaho-operations-mart"
   echo "Installing bi Operations Mart DDL Files";
-  sed -- "s:<installpath>[a-zA-Z0-9\/\-\.]*:<installpath>/tmp/pentaho/$ADDON-${PENTAHO_VERSION}-${PENTAHO_PATCH}:g" /tmp/pentaho/build/auto-install.xml.default > auto-install.xml;
+  sed -- "s:<installpath>[a-zA-Z0-9\/\-\.]*:<installpath>/opt/pentaho/server/biserver-ee/pentaho-solutions/system/default-content:g" /tmp/pentaho/build/auto-install.xml.default > auto-install.xml;
   for PKG in $(echo ${ADDON} | tr ':' '\n');
   do echo "Unzipping $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip...";
     unzip -q /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}-dist.zip -d /tmp/pentaho;
     java -jar $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/installer.jar auto-install.xml 2>/dev/null;
-	unzip -q $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/pentaho-operations-mart-ddl-${PENTAHO_VERSION}-${PENTAHO_PATCH}.zip -d /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH};
-	cp -R $PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}/postgresql/* $PENTAHO_HOME/server/biserver-ee/data/postgresql/
-    #rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}*;
+	rm /opt/pentaho/server/biserver-ee/pentaho-solutions/system/default-content/pentaho-operations-mart*mysql*
+	rm /opt/pentaho/server/biserver-ee/pentaho-solutions/system/default-content/pentaho-operations-mart*mssql*
+	rm /opt/pentaho/server/biserver-ee/pentaho-solutions/system/default-content/pentaho-operations-mart*oracle*
+    rm -rf /tmp/pentaho/$PKG-${PENTAHO_VERSION}-${PENTAHO_PATCH}*;
   done
 
   #******************************
