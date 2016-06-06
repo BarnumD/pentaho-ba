@@ -1,5 +1,5 @@
 #Dockerfile to build Pentaho's Business Analytics frontend 
-# v 1.0
+# v 2.1.10
 # Created using pentaho 'archive' instructions from https://help.pentaho.com/Documentation/5.4/0F0/0P0/020/0B0
 # and info from https://github.com/rxacevedo/docker-pentaho-ba/blob/master/Dockerfile
 #
@@ -8,19 +8,21 @@
 # Docker Run Instructions:
 #
 #  #For testing the build process on a pc.
-#   docker run -d --name pentaho-ba -p 8080:8080 -e TIER=TEST -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db:pentaho-db -v /docker/mounts/pentaho-ba/opt/pentaho:/opt/pentaho pentaho-ba &
+#   docker run -d --name pentaho-ba -p 8080:8080 -e Tier=Test -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db:pentaho-db -v /docker/mounts/pentaho-ba/opt/pentaho:/opt/pentaho pentaho-ba &
 #
-#  #On first ever run, you must include the PGPWD (postgres adimn) password to initialize the database.
-#   docker run -i --name pentaho-ba-test -p 10800:8080 -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-test -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-test:pentaho-db-test -v /dockertmp/mounts/pentaho-ba-test/opt/pentaho:/opt/pentaho pentaho-ba:latest &
+#  #On first ever run, you must include the PGPWD (postgres adimn) password to initialize the database after that it's optional.
+#   docker run -i --name pentaho-ba-test -p 10800:8080 -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-test -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-test:pentaho-db-test -v /docker/mounts/pentaho-ba-test/opt/pentaho:/opt/pentaho pentaho-ba:latest &
 #
 #  #On subsequent boots, (after db is initialized), run non-interactive.
+#   #dev
+#    docker run -d --name pentaho-ba-dev -p 10808:8080 -e Tier=Dev -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-dev -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-dev:pentaho-db-dev -v /docker/mounts/pentaho-ba-dev/opt/pentaho:/opt/pentaho --memory 6344M --memory-swap -1 --oom-kill-disable --cpu-shares=512 --cpuset-cpus="0-1" pentaho-ba:latest &
 #   #test
-#    docker run -d --name pentaho-ba-test -p 10800:8080 -e TIER=TEST -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-test -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-test:pentaho-db-test -v /docker/mounts/pentaho-ba-test/opt/pentaho:/opt/pentaho --memory 6344M --memory-swap -1 --oom-kill-disable -c=512 pentaho-ba:latest &
+#    docker run -d --name pentaho-ba-test -p 10800:8080 -e Tier=Test -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-test -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-test:pentaho-db-test -v /docker/mounts/pentaho-ba-test/opt/pentaho:/opt/pentaho --memory 6344M --memory-swap -1 --oom-kill-disable --cpu-shares=512 --cpuset-cpus="0-1" pentaho-ba:2.1.10 &
 #   #Prod
-#    docker run -d --name pentaho-ba-prod -p 10804:8080 -e TIER=PROD -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-prod -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-prod:pentaho-db-prod -v /docker/mounts/p_t1/pentaho-ba-prod/opt/pentaho:/opt/pentaho --memory 6656M --memory-swap -1 --oom-kill-disable -c=1024 pentaho-ba:1.0 &
+#    docker run -d --name pentaho-ba-prod -p 10804:8080 -e Tier=Prod -e PGUSER=postgresadm -e PGPWD=8s88jjjChangeMe99aks88 -e PGHOST=pentaho-db-prod -e PGPORT=5432 -e PGDATABASE=postgres --link pentaho-db-prod:pentaho-db-prod -v /docker/mounts/pentaho-ba-prod/opt/pentaho:/opt/pentaho --memory 6656M --memory-swap -1 --oom-kill-disable --cpu-shares=1024 --cpuset-cpus="0-5" pentaho-ba:2.1.10 &
 #
-FROM phusion/baseimage:0.9.17
-MAINTAINER Dave Barnum <dave@thebarnums.com>
+FROM phusion/baseimage:0.9.18
+MAINTAINER Dave Barnum <Dave_Barnum@wycliffe.org>
 
 #Update Ubuntu and add repo for postgres 9.4
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > /etc/apt/sources.list.d/pgdg.list; \
@@ -37,7 +39,7 @@ RUN apt-get install -y ca-certificates curl wget zip unzip vim postgresql-client
 	#Tomcat's APM library helps with tomcat speed. Need version 1.1.30+ (not available from normal repo.); \
 	sudo add-apt-repository ppa:pharmgkb/trusty -y; \
 	sudo apt-get update; \
-	#sudo apt-get install libtcnative-1 -y
+	sudo apt-get install libtcnative-1 -y
 ENV LD_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu/"
 
 #Scripts used for startup & initialization.
@@ -62,21 +64,38 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-oracle
 # Setup Pentaho Environment      #
 ##################################
 #Set the target version.  This will be used by the run script to determine if we need to upgrade the version on disk.
-ENV PENTAHO_BA_TARGET_VER="6.0.0.0-353"
+ENV PENTAHO_BA_TARGET_VER="6.0.1.1-398"
+#ENV PENTAHO_BA_TARGET_VER="6.0.1.2" - When upgrading to 6.0.1.2
 
 ENV PENTAHO_JAVA_HOME=$JAVA_HOME
 ENV PENTAHO_HOME=/opt/pentaho
+ENV DI_HOME=/opt/pentaho/server/biserver-ee/pentaho-solutions/system/kettle
 ENV CATALINA_HOME=$PENTAHO_HOME/server/biserver-ee/tomcat
 ENV PENTAHO_INSTALLED_LICENSE_PATH=$PENTAHO_HOME/.pentaho/.installedLicenses.xml
-ENV CATALINA_OPTS="-Djava.awt.headless=true -Xms4g -Xmx6g -Dsun.rmi.dgc.client.gcInterval=3600000 -XX:MaxMetaspaceSize=256m -Dsun.rmi.dgc.server.gcInterval=3600000 -Dpentaho.installed.licenses.file=$PENTAHO_INSTALLED_LICENSE_PATH"
+ENV CATALINA_OPTS="-Djava.awt.headless=true -Xms4g -Xmx6g -XX:MaxMetaspaceSize=256m -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -DDI_HOME=$DI_HOME -Dpentaho.installed.licenses.file=$PENTAHO_INSTALLED_LICENSE_PATH"
 
 #Set Passwords for pentaho database users - default is 'password'
 ENV jcr_user_pwd="ppaiChangeMem887"
 ENV hibuser_pwd="s5gChangeMe877"
 ENV pentaho_user_pwd="0apChangeMe5S66"
 
+#Set download locations for pentaho packages
+ENV pkg-biserver-ee="https://file.location.to/biserver-ee-6.0.1.0-386-dist.zip"
+ENV pkg-paz-plugin="https://file.location.to/paz-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg-pdd-plugin="https://file.location.to/pdd-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg-pir-plugin="https://file.location.to/pir-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg-mobile-plugin="https://file.location.to/pentaho-mobile-plugin-6.0.1.0-386-dist.zip"
+ENV pkg-operations-mart="https://file.location.to/pentaho-operations-mart-6.0.1.0-386-dist.zip"
+
+#Set download locations for pentaho service packs
+ENV pkg-SP201601-60="https://file.location.to/SP201601-6.0.zip"
+ENV pkg-SP201602-60="https://file.location.to/SP201602-6.0.zip"
+
+
+
 #Create Pentaho user & Create main folder structure
-RUN useradd -s /bin/bash -d ${PENTAHO_HOME} pentaho; \
+RUN groupadd -g 7654 pentaho; \
+	useradd -s /bin/bash -d ${PENTAHO_HOME} -u 7654 -g 7654 pentaho; \
 	mkdir -p ${PENTAHO_HOME}; \
 	mkdir -p /tmp/pentaho/build; \
 	chown -R pentaho:pentaho /opt/pentaho
@@ -92,13 +111,18 @@ RUN chown -R pentaho:pentaho /tmp/pentaho
 ENV ALLOW_NEW_INSTALL="YES"
 
 #Setup auto start process for Pentaho BA
-RUN mkdir -p /etc/service/pentaho; \
-	ln -s /scripts/service_start_pentaho.sh /etc/service/pentaho/run;
+RUN mkdir -p /etc/service/ba; \
+	ln -s /scripts/service_start_pentaho.sh /etc/service/ba/run;
 	
-#Setup auto start process for Pentaho BA Hypersonic (sample data database)
-#RUN mkdir -p /etc/service/pentaho_hypersonic; \
-#	ln -s /scripts/service_start_pentaho_hypersonic.sh /etc/service/pentaho_hypersonic/run;
-	
+#Setup auto start process for Pentaho BA Hypersonic (sample data database - aka steel wheels)
+ENV SERVICE_ENABLE_HYPERSONIC=Y
+RUN mkdir -p /etc/service/hypersonic; \
+	ln -s /scripts/service_start_hypersonic.sh /etc/service/hypersonic/run;
+
+#Set the timezone.
+ENV TZ=America/New_York
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 #Cleanup
 RUN apt-get clean; \
 	rm -rf /var/lib/apt/lists/* /var/tmp/*

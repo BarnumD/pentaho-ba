@@ -19,7 +19,7 @@ if [ ! -f "$PENTAHO_HOME/automation/pentaho_bi_installed_version.txt" ]; then
 	  #Run as pentaho user.
 	  mkdir -p ${PENTAHO_HOME}/automation
 	  chown -R pentaho:pentaho $PENTAHO_HOME
-	  /sbin/setuser pentaho /scripts/install_pentaho_ba_6_0_0_0-353.sh
+	  /sbin/setuser pentaho /scripts/install_pentaho_ba_6_0_1_0.sh
 	  /sbin/setuser pentaho /scripts/upgrade_pentaho_ba.sh
 	else
 	  echo "Not installing BA because ALLOW_NEW_INSTALL is set to $ALLOW_NEW_INSTALL"
@@ -51,3 +51,4 @@ rm -rf /tmp/pentaho/*
 /scripts/clean_pentaho_run_env.sh
 #Start the pentaho process
 exec setuser pentaho $PENTAHO_HOME/server/biserver-ee/tomcat/bin/catalina.sh run
+
