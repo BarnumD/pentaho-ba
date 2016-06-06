@@ -1,5 +1,5 @@
 #Dockerfile to build Pentaho's Business Analytics frontend 
-# v 2.1.10
+# v 2.1.11
 # Created using pentaho 'archive' instructions from https://help.pentaho.com/Documentation/5.4/0F0/0P0/020/0B0
 # and info from https://github.com/rxacevedo/docker-pentaho-ba/blob/master/Dockerfile
 #
@@ -80,16 +80,16 @@ ENV hibuser_pwd="s5gChangeMe877"
 ENV pentaho_user_pwd="0apChangeMe5S66"
 
 #Set download locations for pentaho packages
-ENV pkg-biserver-ee="https://file.location.to/biserver-ee-6.0.1.0-386-dist.zip"
-ENV pkg-paz-plugin="https://file.location.to/paz-plugin-ee-6.0.1.0-386-dist.zip"
-ENV pkg-pdd-plugin="https://file.location.to/pdd-plugin-ee-6.0.1.0-386-dist.zip"
-ENV pkg-pir-plugin="https://file.location.to/pir-plugin-ee-6.0.1.0-386-dist.zip"
-ENV pkg-mobile-plugin="https://file.location.to/pentaho-mobile-plugin-6.0.1.0-386-dist.zip"
-ENV pkg-operations-mart="https://file.location.to/pentaho-operations-mart-6.0.1.0-386-dist.zip"
+ENV pkg_biserver_ee="https://file.location.to/biserver-ee-6.0.1.0-386-dist.zip"
+ENV pkg_paz_plugin="https://file.location.to/paz-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg_pdd_plugin="https://file.location.to/pdd-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg_pir_plugin="https://file.location.to/pir-plugin-ee-6.0.1.0-386-dist.zip"
+ENV pkg_mobile_plugin="https://file.location.to/pentaho-mobile-plugin-6.0.1.0-386-dist.zip"
+ENV pkg_operations_mart="https://file.location.to/pentaho-operations-mart-6.0.1.0-386-dist.zip"
 
 #Set download locations for pentaho service packs
-ENV pkg-SP201601-60="https://file.location.to/SP201601-6.0.zip"
-ENV pkg-SP201602-60="https://file.location.to/SP201602-6.0.zip"
+ENV pkg_SP201601_60="https://file.location.to/SP201601-6.0.zip"
+ENV pkg_SP201602_60="https://file.location.to/SP201602-6.0.zip"
 
 
 
